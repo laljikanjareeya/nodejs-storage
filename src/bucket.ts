@@ -2050,7 +2050,13 @@ class Bucket extends ServiceObject {
    * // To control how many API requests are made and page through the results
    * // manually, set `autoPaginate` to `false`.
    * //-
+   * const prefixes = [];
    * const callback = function(err, files, nextQuery, apiResponse) {
+   *   // The `prefixes` property is populated for you with the apiResponse.
+   *   if (apiResponse!.prefixes) {
+   *     prefixes = prefixes.concat(apiResponse.prefixes)
+   *   }
+   * 
    *   if (nextQuery) {
    *     // More results exist.
    *     bucket.getFiles(nextQuery, callback);
@@ -2066,7 +2072,8 @@ class Bucket extends ServiceObject {
    * };
    *
    * bucket.getFiles({
-   *   autoPaginate: false
+   *   autoPaginate: false,
+   *   prefix: '/'
    * }, callback);
    *
    * //-
