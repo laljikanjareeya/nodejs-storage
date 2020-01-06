@@ -3057,6 +3057,8 @@ class Bucket extends ServiceObject {
    *     MD5 checksum for maximum reliability. CRC32c will provide better
    *     performance with less reliability. You may also choose to skip
    * validation completely, however this is **not recommended**.
+   * @param {function} [options.percentageCompletion] callback function to track
+   *     percentage completion.
    */
   /**
    * @typedef {array} UploadResponse
@@ -3194,6 +3196,22 @@ class Bucket extends ServiceObject {
    * //-
    * bucket.upload('local-image.png').then(function(data) {
    *   const file = data[0];
+   * });
+   *
+   * //-
+   * // to track upload process percentage completion
+   * //-
+   * const options = {
+   *    percentageCompletion: function (percentage) {
+   *         console.log(percentage);
+   *    }
+   * };
+   *
+   * bucket.upload('sample-file.docx', options, function(err, file) {
+   *   // Your bucket now contains:
+   *   // - "sample-file.docx" (with the contents of `sample-file.docx')
+   *
+   *   // `file` is an instance of a File object that refers to your new file.
    * });
    *
    * To upload a file from a URL, use {@link File#createWriteStream}.
