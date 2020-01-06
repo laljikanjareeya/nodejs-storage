@@ -317,7 +317,9 @@ export type UploadResponse = [File, Metadata];
 export interface UploadCallback {
   (err: Error | null, file?: File | null, apiResponse?: Metadata): void;
 }
-
+export interface PercentageCompletionCallback {
+  (percentageCompletion: number): void;
+}
 export interface UploadOptions
   extends CreateResumableUploadOptions,
     CreateWriteStreamOptions {
@@ -325,6 +327,7 @@ export interface UploadOptions
   encryptionKey?: string | Buffer;
   kmsKeyName?: string;
   resumable?: boolean;
+  percentageCompletion?: PercentageCompletionCallback;
 }
 
 export interface MakeAllFilesPublicPrivateOptions {
@@ -3253,7 +3256,7 @@ class Bucket extends ServiceObject {
     }
 
     if (options.resumable != null && typeof options.resumable === 'boolean') {
-      upload();
+      upload(options);
     } else {
       // Determine if the upload should be resumable if it's over the threshold.
       fs.stat(pathString, (err, fd) => {
@@ -3264,18 +3267,31 @@ class Bucket extends ServiceObject {
 
         options.resumable = fd.size > RESUMABLE_THRESHOLD;
 
-        upload();
+        upload(options);
       });
     }
 
-    function upload() {
-      fs.createReadStream(pathString)
+    function upload(options: UploadOptions) {
+      const file = fs.createReadStream(pathString);
+      file
         .on('error', callback!)
         .pipe(newFile.createWriteStream(options))
         .on('error', callback!)
         .on('finish', () => {
           callback!(null, newFile, newFile.metadata);
         });
+
+      if (options.percentageCompletion) {
+        const stats = fs.statSync(pathString);
+        const fileSizeInBytes = stats['size'];
+        let uploadedBytes = 0;
+        file.on('data', data => {
+          uploadedBytes = uploadedBytes + data.length;
+          options.percentageCompletion!(
+            Number(((uploadedBytes / fileSizeInBytes) * 100).toFixed(2))
+          );
+        });
+      }
     }
   }
 
