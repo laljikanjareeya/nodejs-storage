@@ -686,7 +686,7 @@ class File extends ServiceObject<File> {
        *   const apiResponse = data[1];
        * });
        *
-       * @example <caption>include:samples/files.js</caption>
+       * @example <caption>include:samples/fileGetMetadata.js</caption>
        * region_tag:storage_get_metadata
        * Another example:
        */
