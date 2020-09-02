@@ -112,6 +112,23 @@ it("should disable a bucket's uniform bucket-level access", async () => {
   );
 });
 
+it("should add a bucket's website configuration", async () => {
+  const output = execSync(
+    `node addBucketWebsiteConfiguration.js ${bucketName} http://example.com http://example.com/404.html`
+  );
+
+  assert.match(
+    output,
+    new RegExp(`Website configuration has been added to ${bucketName}.`)
+  );
+
+  const [metadata] = await bucket.getMetadata();
+  assert.deepStrictEqual(metadata.website, {
+    mainPageSuffix: 'http://example.com',
+    notFoundPage: 'http://example.com/404.html',
+  });
+});
+
 it('should delete a bucket', async () => {
   const output = execSync(`node deleteBucket.js ${bucketName}`);
   assert.match(output, new RegExp(`Bucket ${bucketName} deleted.`));
